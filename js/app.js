@@ -1,16 +1,16 @@
 let data = JSON.parse(localStorage.getItem("toDoList")) || [];
 let taskCategory = "";
 const categories = ["pending", "in-progress", "completed"];
-const modalContent = document.getElementById("modal-content");
-const modal = modalContent.querySelector(".modal");
-const modalTitle = document.getElementById("modal-title");
-const form = document.getElementById("form");
-const btnSubmit = document.getElementById("btn-submit");
-
+const $ = select => document.querySelector(select);
+const modalContent = $("#modal-content");
+const modal = $(".modal");
+const modalTitle = $("#modal-title");
+const form = $("#form");
+const btnSubmit = $("#btn-submit");
 
 class Task {
     constructor(id, name, description, category, date) {
-        this.id = id  || Date.now().toString(36) + Math.random().toString(36).substring(2);
+        this.id = id || Date.now().toString(36) + Math.random().toString(36).substring(2);
         this.name = name;
         this.description = description;
         this.category = category;
@@ -25,7 +25,6 @@ class Task {
         const taskIndex = data.findIndex(item => item.id === this.id);
         data.splice(taskIndex, 1);
         updateData(this.category);
-        console.log(data)
     }
     ui() {
         const container = document.createElement("div");
@@ -34,23 +33,24 @@ class Task {
         container.setAttribute("draggable", true);
         container.setAttribute("ondragstart", "onDragStart(event)");
         container.innerHTML = `
-                <div class="options">
-                    <i onclick="openModal(this.parentElement.parentElement, '${this.category}', 'edit', 'Editar Tarea')" class="ri-edit-box-line"></i>
-                    <i onclick="deleteTask(this.dataset.id)" data-id="${this.id}" data-category="${this.category}" class="ri-delete-bin-line"></i>
-                </div>
-                <p class="name">${this.name}</p>
-                <p class="description">${this.description}</p> 
-            `;
+            <div class="options">
+                <i onclick="openModal(this.parentElement.parentElement, '${this.category}', 'edit', 'Editar Tarea')" class="ri-edit-box-line"></i>
+                <i onclick="deleteTask('${this.id}')" class="ri-delete-bin-line"></i>
+            </div>
+            <p class="name">${this.name}</p>
+            <p class="description">${this.description}</p> 
+        `;
         return container;
     }
 }
 
-const onDragStart = (e) => e.dataTransfer.setData("text/plain", JSON.stringify(findTask(e.target.id)));
+const onDragStart = (e) => e.dataTransfer.setData("text/plain", e.target.id);
 
 const onDrop = (e) => {
-    const { id, category } = JSON.parse(e.dataTransfer.getData("text"));
-    findTask(id).category = e.currentTarget.id;
-    updateData(category);
+    const task = findTask(e.dataTransfer.getData("text"));
+    const clone = {...task};
+    task.category = e.currentTarget.id;
+    updateData(clone.category);
     render(e.currentTarget.id);
     e.dataTransfer.clearData();
 };
@@ -68,14 +68,6 @@ const openModal = (el, category, action = "create", title = "Crear tarea") => {
     modalContent.classList.add("modal-content-visible");
     form.setAttribute("data-action", action);
     form.reset();
-
-    if(modalHeight > spaceAvailable) {
-        modal.children[0].style.cssText = `bottom: -10px`;
-        modal.style.cssText = `width: ${width}px; top: ${top - modalHeight}px; left: ${left}px;`;
-    }else{
-        modal.children[0].style.cssText = `top: -10px`;
-        modal.style.cssText = `width: ${width}px; top: ${top + 40}px; left: ${left}px;`;
-    }
     
     if (action === "edit") {
         const { id, name, description } = findTask(el.id);
@@ -83,17 +75,23 @@ const openModal = (el, category, action = "create", title = "Crear tarea") => {
         form.setAttribute("data-id", id);
         form.name.value = name;
         form.description.value = description;
-        return;
     }
+
+    const setPostionModal = ([arrowPosition, topPosition ]) => {
+        modal.children[0].style.cssText = `${arrowPosition}: -10px`;
+        modal.style.cssText = `width: ${width}px; top: ${topPosition}px; left: ${left}px;`;
+    }
+
+    setPostionModal(modalHeight > spaceAvailable ? ["bottom", top - modalHeight] : ["top", top + 40]);
 };
 
-modalContent.addEventListener("click", async e => {
+modalContent.addEventListener("click", e => {
     if (e.target === modalContent) modalContent.classList.remove("modal-content-visible");
 });
 
 
 const render = (category) => {
-    const section = document.getElementById(category);
+    const section = $(`#${category}`);
     const count = section.parentElement.querySelector(".count");
     const dataFilter = data.filter((item) => item.category === category);
     if (dataFilter.length > 0) {
@@ -107,6 +105,22 @@ const render = (category) => {
     count.textContent = dataFilter.length;
 };
 
+const findTask = (id, property) => {
+    const result = data.find(item => item.id === id);
+    return result ? !property ? result : result.hasOwnProperty(property) ? result[property] : -1 : false;
+};
+
+const createTask = ({name, description, category}) => {
+    data.push(new Task(undefined, name, description, category, undefined));
+    updateData(taskCategory);
+} 
+
+const deleteTask = id => findTask(id).delete();
+
+const updateData = category => {
+    localStorage.setItem("toDoList", JSON.stringify(data));
+    render(category);
+};
 
 form.addEventListener("submit", e => {
     const formAction = e.target.dataset.action;
@@ -122,29 +136,12 @@ form.addEventListener("submit", e => {
     btnSubmit.removeAttribute("disabled");
 });
 
-
-
-const findTask = (id, property) => {
-    const result = data.filter(item => item.id === id).shift();
-    return result ? !property ? result : result.hasOwnProperty(property) ? result[property] : -1 : false;
-};
-
-const createTask = ({name, description, category}) => {
-    data.push(new Task(undefined, name, description, category));
-    updateData(taskCategory);
-} 
-
-const deleteTask = id => findTask(id).delete();
-
-const updateData = category => {
-    localStorage.setItem("toDoList", JSON.stringify(data));
-    render(category);
-};
-
 !(function () {
-    const newData = data.map(item => new Task(item.id, item.name, item.description, item.category, item.date));
-    data = newData;
+    if(data.length > 0 ) {
+        const newData = data.map(item => new Task(item.id, item.name, item.description, item.category, item.date));
+        data = newData;
+    }
     categories.map(category => render(category));
 })();
 
-console.log(window.innerWidth / 2, window.innerHeight / 2)
+

@@ -20,7 +20,10 @@
                     <div class="count"><span>0</span></div>
                 </header>
                 <button onclick="openModal(this, 'pending')" class="add-btn"><i class="ri-add-line"></i></button>
-                <div id="pending" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)" ></div>
+                <div id="pending" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)" >
+                    <div class="spinner"></div>
+                    <p class="msg">Obteniendo datos</p>
+                </div>
             </div>
 
             <div class="content">
@@ -29,7 +32,10 @@
                     <div class="count"><span>0</span></div>
                 </header>
                 <button onclick="openModal(this, 'in-progress')" class="add-btn"><i class="ri-add-line"></i></button>
-                <div id="in-progress" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)"></div>
+                <div id="in-progress" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)">
+                    <div class="spinner"></div>
+                    <p class="msg">Obteniendo datos</p>
+                </div>
             </div>
             
             <div class="content">
@@ -38,7 +44,10 @@
                     <div class="count"><span>0</span></div>
                 </header>
                 <button onclick="openModal(this, 'completed')" class="add-btn"><i class="ri-add-line"></i></button>
-                <div id="completed" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)" ></div>
+                <div id="completed" class="list" ondrop="onDrop(event)" ondragover="onDragOver(event)" >
+                    <div class="spinner"></div>
+                    <p class="msg">Obteniendo datos</p>
+                </div>
         </section>
     </main>
     <div id="modal-content" class="modal-content">

@@ -88,6 +88,9 @@ main{
     gap: 0.75rem;
     overflow: auto;
 }
+.list .spinner {
+    margin: 0 auto;
+}
 .msg{
     color: #dbe9ec;
     text-align: center;
@@ -128,6 +131,7 @@ main{
     transition: 500ms;
     cursor: pointer;
 }
+
 
 
 
@@ -219,19 +223,19 @@ main{
 
 
 .spinner {
-    border: 2px solid #f0f8fa;
+    border: 2px solid;
     width: 40px;
     height: 40px;
+    border-color: #dbe9ec rgba(0,0,0,.1) rgba(0,0,0,.1);
     border-radius: 50%;
-    border-left-color: #fff0;
-    animation: spin 750ms ease infinite;
+    display: inline-block;
+    animation: spinner 750ms linear infinite;
 }
   
-@keyframes spin {
+@keyframes spinner {
     0% {
       transform: rotate(0deg);
     }
-  
     100% {
       transform: rotate(360deg);
     }
@@ -243,7 +247,7 @@ main{
         transform: scale(0);
     }
     50%{
-        transform: scale(1.015);
+        transform: scale(1.025);
     }
     100%{
         transform: scale(1);
